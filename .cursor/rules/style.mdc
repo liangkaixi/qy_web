@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### /reservation页面的UI核心要素
+运动风格UI核心要素
+渐变色背景（如蓝绿渐变）
+大圆角、加粗字体
+按钮有阴影、hover/active有动感
+输入框有圆角和高亮边框
+内容区有圆角和阴影
+选中/禁用状态对比强烈
+响应式适配

@@ -1,0 +1,57 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### 创建的表如下
+-- 场馆表
+create table qy_venues (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  address text,
+  description text,
+  cover_image text,
+  status text default 'available'
+);
+
+-- 场地类型表
+create table qy_court_types (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  icon text
+);
+
+-- 场地表
+create table qy_courts (
+  id uuid primary key default gen_random_uuid(),
+  venue_id uuid references qy_venues(id),
+  type_id uuid references qy_court_types(id),
+  name text not null,
+  area text,
+  image text,
+  resource_key text,      -- 物理分区唯一标识（如 court2A、court2B）
+  resource_group text,    -- 物理场地分组（如 court2）
+  area_type text,         -- 'full'（全场）或 'part'（分场/羽毛球/气排球等）
+  status text default 'available'
+);
+
+-- 场地图片表（可选）
+create table qy_court_images (
+  id uuid primary key default gen_random_uuid(),
+  court_id uuid references qy_courts(id),
+  url text not null,
+  sort int default 0
+);
+
+-- 预约表
+create table qy_court_reservations (
+  id uuid primary key default gen_random_uuid(),
+  court_id uuid references qy_courts(id),
+  date date not null,
+  start_time time not null,
+  duration int not null,
+  price numeric not null,
+  phone text not null,
+  status text default 'reserved',
+  created_at timestamptz default now()
+);
