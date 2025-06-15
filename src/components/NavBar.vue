@@ -10,19 +10,39 @@
       <li><a href="#">训练</a></li>
       <li><a href="#">约赛</a></li>
       <li><router-link to="/reservation">场地</router-link></li>
-      <li><router-link to="/login">登录</router-link></li>
-      <li><router-link to="/register">注册</router-link></li>
+      <template v-if="user">
+        <li><router-link to="/me">我的</router-link></li>
+        <li><a href="#" @click.prevent="logout">退出</a></li>
+      </template>
+      <template v-else>
+        <li><router-link to="/login">登录</router-link></li>
+        <li><router-link to="/register">注册</router-link></li>
+      </template>
     </ul>
   </nav>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 // 响应式菜单开关
 const menuOpen = ref(false);
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
+const router = useRouter();
+// 登录状态判断
+const user = ref(null);
+function checkUser() {
+  const u = localStorage.getItem("qy_user");
+  user.value = u ? JSON.parse(u) : null;
+}
+checkUser();
+// 退出登录
+function logout() {
+  localStorage.removeItem("qy_user");
+  location.reload();
+}
 </script>
 
 <style scoped>

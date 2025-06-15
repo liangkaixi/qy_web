@@ -8,6 +8,8 @@ import Badminton from './views/Badminton.vue'
 import Volleyball from './views/Volleyball.vue'
 import Fitness from './views/Fitness.vue'
 import Reserve from './views/Reserve.vue'
+import Me from './views/Me.vue'
+import MyTeams from './views/MyTeams.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -19,6 +21,8 @@ const routes = [
   { path: '/fitness', component: Fitness },
   { path: '/reserve/:type', component: Reserve },
   { path: '/reservation', component: () => import('./views/Reservation.vue') },
+  { path: '/me', component: Me },
+  { path: '/my-teams', component: MyTeams },
 ]
 
 const router = createRouter({

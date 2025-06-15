@@ -55,3 +55,32 @@ create table qy_court_reservations (
   status text default 'reserved',
   created_at timestamptz default now()
 );
+-- 球队表（qy_teams）
+Apply to Reservation....
+create table qy_teams (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  type text not null, -- 'basketball' | 'volleyball' | 'badminton'
+  logo text,          -- 队徽图片url
+  description text,
+  captain_id uuid references auth.users(id), -- 队长/创建者
+  created_at timestamptz default now()
+);
+-- 球队成员表（qy_team_members）
+Apply to Reservation....
+create table qy_team_members (
+  id uuid primary key default gen_random_uuid(),
+  team_id uuid references qy_teams(id),
+  user_id uuid references auth.users(id),
+  nickname text,
+  is_captain boolean default false,
+  joined_at timestamptz default now()
+);
+
+--个人资料
+create table qy_user_profiles (
+  id uuid primary key references auth.users(id),
+  name text,
+  contact text,
+  avatar text
+);
