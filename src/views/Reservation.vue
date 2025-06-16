@@ -225,24 +225,43 @@ async function fetchAllReservationsForDate() {
 
 // 获取所有与当前分区互斥的分区id（含自己，双向）
 async function getConflictCourtIds(courtId) {
-  // 1. 查找所有与当前分区互斥的分区
+  const cleanCourtId = String(courtId).trim();
+  console.log(
+    "getConflictCourtIds input courtId:",
+    cleanCourtId,
+    typeof cleanCourtId
+  );
+  // 全表打印
+  const { data: allConflicts, error: allErr } = await supabase
+    .from("qy_court_conflicts")
+    .select("*");
+  console.log("ALL qy_court_conflicts:", allConflicts);
+  // 本地 filter 调试
+  const filtered = (allConflicts || []).filter(
+    (c) => c.court_id === cleanCourtId
+  );
+  console.log("Filtered conflicts:", filtered);
+  // 查找所有与当前分区互斥的分区（正向）
   const { data: conflicts, error } = await supabase
     .from("qy_court_conflicts")
-    .select("conflict_court_id")
-    .eq("court_id", courtId);
+    .select("court_id,conflict_court_id")
+    .eq("court_id", cleanCourtId);
+  console.log("conflicts for", cleanCourtId, conflicts);
   if (error) throw error;
-  // 2. 反查：如果有对称互斥（B->A），也查出来
+  // 反查：如果有对称互斥（B->A），也查出来
   const { data: reverseConflicts, error: revErr } = await supabase
     .from("qy_court_conflicts")
-    .select("court_id")
-    .eq("conflict_court_id", courtId);
+    .select("court_id,conflict_court_id")
+    .eq("conflict_court_id", cleanCourtId);
+  console.log("reverseConflicts for", cleanCourtId, reverseConflicts);
   if (revErr) throw revErr;
-  // 3. 合并所有互斥分区id + 自己
+  // 合并所有互斥分区id + 自己
   const ids = [
-    courtId,
+    cleanCourtId,
     ...conflicts.map((c) => c.conflict_court_id),
     ...reverseConflicts.map((c) => c.court_id),
   ];
+  console.log("getConflictCourtIds result for", cleanCourtId, "=>", ids);
   return Array.from(new Set(ids));
 }
 
@@ -297,17 +316,38 @@ async function fetchReservations() {
   }
 }
 
-// 根据所有相关预约禁用时间段（只用当前分区及其互斥分区的预约）
+// 全局禁用映射实现，确保物理互斥100%准确（加日志+并发优化）
 async function updateAvailableSlots() {
   if (!courtId.value) {
     availableSlots.value = [];
     return;
   }
-  // 获取当前分区及其互斥分区 id
-  const relatedCourtIds = await getConflictCourtIds(courtId.value);
-  const relevantReservations = reservations.value.filter((r) =>
-    relatedCourtIds.includes(r.court_id)
+  // 1. 查询当天所有预约（已缓存到 reservations.value）
+  const allReservations = reservations.value;
+  console.log("allReservations", allReservations);
+  // 2. 并发查所有互斥分区
+  const allRelatedIdsArr = await Promise.all(
+    allReservations.map((r) => getConflictCourtIds(r.court_id))
   );
+  // 3. 构建禁用映射：{ courtId: [{start, end}] }
+  const disableMap = {};
+  for (let i = 0; i < allReservations.length; i++) {
+    const r = allReservations[i];
+    const relatedIds = allRelatedIdsArr[i];
+    console.log("getConflictCourtIds for", r.court_id, "=>", relatedIds);
+    const rStart =
+      parseInt(r.start_time.slice(0, 2)) * 60 +
+      parseInt(r.start_time.slice(3, 5));
+    const rEnd = rStart + (r.duration || 60);
+    for (const id of relatedIds) {
+      if (!disableMap[id]) disableMap[id] = [];
+      disableMap[id].push({ start: rStart, end: rEnd });
+    }
+  }
+  console.log("disableMap", disableMap);
+  // 4. 渲染当前分区的时间格
+  const currentId = courtId.value;
+  console.log("currentId", currentId);
   const slots = [];
   for (let h = 8; h < 22; h++) {
     for (let m = 0; m < 60; m += 30) {
@@ -316,13 +356,9 @@ async function updateAvailableSlots() {
         .padStart(2, "0")}:00`;
       const slotStart = h * 60 + m;
       const slotEnd = slotStart + 30;
-      const disabled = relevantReservations.some((r) => {
-        const rStart =
-          parseInt(r.start_time.slice(0, 2)) * 60 +
-          parseInt(r.start_time.slice(3, 5));
-        const rEnd = rStart + (r.duration || 60);
-        return Math.max(slotStart, rStart) < Math.min(slotEnd, rEnd);
-      });
+      const disabled = (disableMap[currentId] || []).some(
+        ({ start, end }) => Math.max(slotStart, start) < Math.min(slotEnd, end)
+      );
       slots.push({
         label: `${h}:${m === 0 ? "00" : m}`,
         value: time,
