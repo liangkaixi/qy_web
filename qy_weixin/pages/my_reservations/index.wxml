@@ -1,0 +1,11 @@
+<view class="my-reservations-page">
+  <block wx:for="{{reservations}}" wx:key="id">
+    <view class="reservation-card">
+      <view>场地ID: {{item.court_id}}</view>
+      <view>日期: {{item.date}} {{item.start_time}}</view>
+      <view>时长: {{item.duration}} 小时</view>
+      <view>状态: {{item.status}}</view>
+      <button data-id="{{item.id}}" bindtap="cancelReservation" wx:if="{{item.status === 'reserved'}}">取消预约</button>
+    </view>
+  </block>
+</view>

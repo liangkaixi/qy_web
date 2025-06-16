@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
-### /reservation页面的UI核心要素
+###页面的UI核心要素
 运动风格UI核心要素
 渐变色背景（如蓝绿渐变）
 大圆角、加粗字体

@@ -1,0 +1,52 @@
+<view class="reservation-container">
+  <view class="sport-title">场地预约</view>
+  <!-- 类型选择 -->
+  <view class="type-btn-group">
+    <button wx:for="{{courtTypes}}" wx:key="id"
+      class="type-btn {{courtTypeId === item.id ? 'active' : ''}}"
+      bindtap="onSelectType" data-id="{{item.id}}">
+      {{item.name}}
+    </button>
+  </view>
+  <!-- 分区选择 -->
+  <view class="area-btn-group" wx:if="{{showAreaType}}">
+    <button wx:for="{{areaTypes}}" wx:key="value"
+      class="area-btn {{areaType === item.value ? 'active' : ''}}"
+      bindtap="onSelectArea" data-value="{{item.value}}">
+      {{item.label}}
+    </button>
+  </view>
+  <!-- 场地选择 -->
+  <view class="court-btn-group" wx:if="{{showCourtSelect && filteredCourts.length}}">
+    <button wx:for="{{filteredCourts}}" wx:key="id"
+      class="court-btn {{courtId === item.id ? 'active' : ''}}"
+      bindtap="onSelectCourt" data-id="{{item.id}}">
+      {{item.name}}
+    </button>
+  </view>
+  <!-- 日期选择 -->
+  <picker mode="date" value="{{date}}" start="{{dateOptions[0].value}}" end="{{dateOptions[dateOptions.length-1].value}}" bindchange="onDateChange">
+    <view class="date-select">{{dateLabel}}</view>
+  </picker>
+  <!-- 时间段展示 -->
+  <view class="slots-grid" wx:if="{{availableSlots.length}}">
+    <button wx:for="{{availableSlots}}" wx:key="value"
+      class="slot-btn {{item.disabled ? 'reserved' : ''}} {{startTime === item.value ? 'active' : ''}}"
+      disabled="{{item.disabled}}" bindtap="onSelectSlot" data-value="{{item.value}}">
+      {{item.label}}
+    </button>
+  </view>
+  <!-- 时长选择 -->
+  <view class="duration-btn-group" wx:if="{{startTime}}">
+    <button wx:for="{{durations}}" wx:key="d"
+      class="duration-btn {{duration === item ? 'active' : ''}}"
+      bindtap="onSelectDuration" data-value="{{item}}">
+      {{item}}小时
+    </button>
+  </view>
+  <!-- 手机号 -->
+  <input class="phone-input" type="text" placeholder="手机号" value="{{phone}}" bindinput="onPhoneInput"/>
+  <button class="submit-btn" loading="{{loading}}" bindtap="onSubmit" disabled="{{loading}}">预约</button>
+  <view wx:if="{{message}}" class="error-msg">{{message}}</view>
+  <view wx:if="{{errorMsg}}" class="error-msg">{{errorMsg}}</view>
+</view>

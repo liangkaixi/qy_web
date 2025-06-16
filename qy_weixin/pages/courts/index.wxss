@@ -1,0 +1,60 @@
+.courts-page {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e3eefe 0%, #b2ebf2 100%);
+  padding: 32rpx 16rpx 32rpx 16rpx;
+}
+.court-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+.court-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(64,158,255,0.10);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s;
+}
+.court-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(64,158,255,0.12);
+}
+.court-image {
+  width: 100%;
+  height: 200rpx;
+  object-fit: cover;
+  border-radius: 24rpx 24rpx 0 0;
+}
+.court-info {
+  padding: 20rpx 18rpx 18rpx 18rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+.court-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1a73e8;
+}
+.court-area {
+  font-size: 24rpx;
+  color: #67c23a;
+  font-weight: 500;
+}
+.court-status {
+  align-self: flex-end;
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 10rpx;
+  font-weight: 600;
+}
+.court-status.available {
+  background: linear-gradient(90deg, #67c23a 60%, #409eff 100%);
+  color: #fff;
+}
+.court-status:not(.available) {
+  background: #eee;
+  color: #aaa;
+}

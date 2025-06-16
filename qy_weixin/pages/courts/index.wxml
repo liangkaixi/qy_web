@@ -1,0 +1,14 @@
+<view class="courts-page">
+  <view class="court-list">
+    <block wx:for="{{courts}}" wx:key="id">
+      <view class="court-card" bindtap="goToCourtDetail" data-id="{{item.id}}">
+        <image class="court-image" src="{{item.image}}" mode="aspectFill" />
+        <view class="court-info">
+          <view class="court-title">{{item.name}}</view>
+          <view class="court-area">{{item.area}}</view>
+          <view class="court-status {{item.status}}">{{item.status == 'available' ? '可预约' : '不可用'}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

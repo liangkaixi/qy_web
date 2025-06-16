@@ -1,0 +1,76 @@
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e3eefe 0%, #b2ebf2 100%);
+  padding: 0 0 32rpx 0;
+}
+.banner {
+  width: 100%;
+  height: 240rpx;
+  margin-bottom: 24rpx;
+}
+.banner-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0 0 32rpx 32rpx;
+  object-fit: cover;
+}
+.welcome-title {
+  text-align: center;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1a73e8;
+  margin: 32rpx 0 40rpx 0;
+  letter-spacing: 2rpx;
+}
+.sports-entry {
+  display: flex;
+  justify-content: space-around;
+  margin: 0 0 40rpx 0;
+}
+.sport-btn {
+  background: linear-gradient(90deg, #409eff 60%, #67c23a 100%);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+  border-radius: 20rpx;
+  padding: 40rpx 0;
+  width: 20vw;
+  text-align: center;
+  box-shadow: 0 2rpx 8rpx rgba(64,158,255,0.10);
+  transition: background 0.2s;
+}
+.sport-btn:active {
+  background: linear-gradient(90deg, #67c23a 60%, #409eff 100%);
+}
+.swiper-section {
+  width: 100vw;
+  margin-top: 32rpx;
+  display: flex;
+  justify-content: center;
+}
+.home-swiper {
+  width: 92vw;
+  height: 320rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+.swiper-img {
+  width: 100%;
+  height: 320rpx;
+  object-fit: cover;
+  border-radius: 24rpx;
+}
+.swiper-text-section {
+  margin: 24rpx 0 0 0;
+  text-align: center;
+}
+.swiper-title {
+  color: #1a73e8;
+  font-size: 32rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+.swiper-desc {
+  color: #64748b;
+  font-size: 24rpx;
+}

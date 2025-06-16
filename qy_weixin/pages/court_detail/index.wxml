@@ -1,0 +1,33 @@
+<view class="court-detail">
+  <view class="court-header">
+    <image class="court-img" src="{{court.cover_image}}" mode="aspectFill" />
+    <view class="court-title">{{court.name}}</view>
+    <view class="court-desc">{{court.description}}</view>
+  </view>
+  <view class="reservation-form">
+    <picker mode="date" value="{{date}}" bindchange="onDateChange">
+      <view class="form-row">
+        <text>预约日期：</text>
+        <text class="date-value">{{date}}</text>
+      </view>
+    </picker>
+    <view class="form-row">
+      <text>时间段：</text>
+      <view class="slot-list">
+        <block wx:for="{{slots}}" wx:key="value">
+          <button class="slot-btn {{item.disabled ? 'disabled' : ''}} {{start_time === item.value ? 'selected' : ''}}" data-value="{{item.value}}" bindtap="selectSlot" disabled="{{item.disabled}}">{{item.label}}</button>
+        </block>
+      </view>
+    </view>
+    <view class="form-row">
+      <text>时长：</text>
+      <button class="duration-btn {{duration === 1 ? 'selected' : ''}}" data-value="1" bindtap="selectDuration">1小时</button>
+      <button class="duration-btn {{duration === 2 ? 'selected' : ''}}" data-value="2" bindtap="selectDuration">2小时</button>
+    </view>
+    <view class="form-row">
+      <text>手机号：</text>
+      <input class="input" type="number" maxlength="11" value="{{phone}}" data-field="phone" bindinput="onInput" placeholder="请输入手机号" />
+    </view>
+    <button class="submit-btn" loading="{{submitting}}" bindtap="submitReservation">立即预约</button>
+  </view>
+</view>

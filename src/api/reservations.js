@@ -47,10 +47,23 @@ export async function createReservation(reservation) {
     logger.warn('Reservation conflict detected', { reservation });
     throw new Error('该时间段已被预约');
   }
-  // 插入预约
+  // 获取北京时间（无论运行环境在哪个时区都准确）
+  function getBeijingTime() {
+    const now = new Date();
+    // 取UTC时间，加8小时
+    const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const y = beijing.getUTCFullYear();
+    const m = (beijing.getUTCMonth() + 1).toString().padStart(2, '0');
+    const d = beijing.getUTCDate().toString().padStart(2, '0');
+    const h = beijing.getUTCHours().toString().padStart(2, '0');
+    const min = beijing.getUTCMinutes().toString().padStart(2, '0');
+    const s = beijing.getUTCSeconds().toString().padStart(2, '0');
+    return `${y}-${m}-${d} ${h}:${min}:${s}`;
+  }
+  // 插入预约，created_at为北京时间
   const { data, error } = await supabase
     .from('qy_court_reservations')
-    .insert([reservation])
+    .insert([{ ...reservation, created_at: getBeijingTime() }])
     .select();
   if (error) {
     logger.error('Failed to create reservation', { error });

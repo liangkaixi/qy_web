@@ -1,0 +1,10 @@
+<view class="me-page">
+  <view class="me-avatar-section">
+    <image class="me-avatar" src="/static/tabbar/me.png" mode="aspectFill" />
+    <view class="me-nickname">未登录</view>
+  </view>
+  <view class="me-menu">
+    <view class="me-menu-item">我的预约</view>
+    <view class="me-menu-item">设置</view>
+  </view>
+</view>
