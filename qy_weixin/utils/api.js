@@ -61,6 +61,23 @@ function getCourtsByType(type_id) {
   return request({ url: '/courts', data: { type_id } });
 }
 
+// 获取禁用时间段映射
+async function getDisabledSlots(date, courtId) {
+  console.log('🔥 courtId 请求:', courtId);
+  try {
+    const data = await request({
+      url: '/disabled_slots',
+      method: 'GET',
+      data: { date, courtId }
+    });
+    console.log('🔥 预约记录:', data);
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error fetching reservations:', error);
+    return { data: {}, error };
+  }
+}
+
 module.exports = {
   getVenues,
   getCourtTypes,
@@ -70,5 +87,6 @@ module.exports = {
   createReservation,
   cancelReservation,
   getCourtReservations,
-  getCourtsByType
+  getCourtsByType,
+  getDisabledSlots,
 };

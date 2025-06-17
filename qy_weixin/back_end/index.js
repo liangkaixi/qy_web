@@ -66,23 +66,9 @@ app.post('/api/reservations', async (req, res) => {
   if (!court_id || !date || !start_time || !duration || price === undefined || !phone) {
     return res.status(400).json({ code: 1, msg: '参数不完整' });
   }
-  // 获取北京时间
-  function getBeijingTime() {
-    const now = new Date();
-    const offset = 8 * 60; // 8小时*60分钟
-    const local = new Date(now.getTime() + (offset - now.getTimezoneOffset()) * 60000);
-    const y = local.getFullYear();
-    const m = (local.getMonth() + 1).toString().padStart(2, '0');
-    const d = local.getDate().toString().padStart(2, '0');
-    const h = local.getHours().toString().padStart(2, '0');
-    const min = local.getMinutes().toString().padStart(2, '0');
-    const s = local.getSeconds().toString().padStart(2, '0');
-    return `${y}-${m}-${d} ${h}:${min}:${s}`;
-  }
-  const created_at = getBeijingTime();
   const { data, error } = await supabase
     .from('qy_court_reservations')
-    .insert([{ court_id, date, start_time, duration, price, phone, status: 'reserved', created_at }])
+    .insert([{ court_id, date, start_time, duration, price, phone, status: 'reserved' }])
     .select()
     .single();
   if (error) return res.status(500).json({ code: 1, msg: '预约失败', error });
@@ -113,7 +99,7 @@ app.get('/api/court_types', async (req, res) => {
   res.json({ code: 0, data });
 });
 
-// 查询某场地或一组场地在某天的所有预约
+//8 查询某场地或一组场地在某天的所有预约
 app.get('/api/court_reservations', async (req, res) => {
   const { court_id, court_ids, date } = req.query;
   if ((!court_id && !court_ids) || !date) {
@@ -138,6 +124,86 @@ app.get('/api/court_reservations', async (req, res) => {
   if (error) return res.status(500).json({ code: 1, msg: '数据库查询失败', error });
   res.json({ code: 0, data });
 });
+
+//9 // 工具函数：获取所有与当前分区互斥的分区id（含自己，双向）
+async function getConflictCourtIds(courtId) {
+  const cleanCourtId = String(courtId).trim();
+  // 正向
+  const { data: conflicts, error } = await supabase
+    .from('qy_court_conflicts')
+    .select('court_id,conflict_court_id')
+    .eq('court_id', cleanCourtId);
+  if (error) throw error;
+  // 反向
+  const { data: reverseConflicts, error: revErr } = await supabase
+    .from('qy_court_conflicts')
+    .select('court_id,conflict_court_id')
+    .eq('conflict_court_id', cleanCourtId);
+  if (revErr) throw revErr;
+  const ids = [
+    cleanCourtId,
+    ...conflicts.map((c) => c.conflict_court_id),
+    ...reverseConflicts.map((c) => c.court_id),
+  ];
+  return Array.from(new Set(ids));
+}
+
+// 聚合API：返回所有分区的禁用时间段
+app.get('/api/disabled_slots', async (req, res) => {
+  const { date, courtId } = req.query;
+  if (!date) return res.status(400).json({ error: 'date is required' });
+
+  // 查询目标场地（如果有）
+  let courtIdsToQuery = [];
+  if (courtId) {
+    try {
+      courtIdsToQuery = await getConflictCourtIds(courtId); // 自己 + 互斥
+    } catch (err) {
+      return res.status(500).json({ error: '获取互斥场地失败', detail: err.message });
+    }
+  }
+
+  // 查询预约
+  let query = supabase
+    .from('qy_court_reservations')
+    .select('*')
+    .eq('date', date);
+  if (courtIdsToQuery.length > 0) {
+    query = query.in('court_id', courtIdsToQuery);
+  }
+
+  const { data: allReservations, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+
+  // 构建禁用映射
+  const allRelatedIdsArr = await Promise.all(
+    allReservations.map(r => getConflictCourtIds(r.court_id))
+  );
+  const disableMap = {};
+  for (let i = 0; i < allReservations.length; i++) {
+    const r = allReservations[i];
+    const relatedIds = allRelatedIdsArr[i];
+    const rStart = parseInt(r.start_time.slice(0, 2)) * 60 + parseInt(r.start_time.slice(3, 5));
+    const rEnd = rStart + (r.duration || 60);
+    for (const id of relatedIds) {
+      if (!disableMap[id]) disableMap[id] = [];
+      disableMap[id].push({ start: rStart, end: rEnd });
+    }
+  }
+
+  // 如果传了 courtId，仅返回相关项
+  if (courtId) {
+    const filtered = {};
+    for (const id of courtIdsToQuery) {
+      if (disableMap[id]) filtered[id] = disableMap[id];
+    }
+    return res.json(filtered);
+  }
+
+  // 否则返回全部
+  res.json(disableMap);
+});
+
 const port = process.env.PORT || 8000;
 app.listen(port, '0.0.0.0', () => {  // 确保是0.0.0.0而非localhost
   console.log(`API server running at http://0.0.0.0:${port}`);

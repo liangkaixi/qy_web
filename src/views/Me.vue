@@ -5,52 +5,52 @@
       <div class="me-avatar-section" @click="triggerAvatarInput">
         <img v-if="avatarUrl" :src="avatarUrl" class="me-avatar" />
         <span v-else class="me-avatar-plus">+</span>
-        <input
-          ref="avatarInput"
-          type="file"
-          accept="image/*"
-          @change="onAvatarChange"
-          style="display: none"
-        />
-      </div>
+            <input
+              ref="avatarInput"
+              type="file"
+              accept="image/*"
+              @change="onAvatarChange"
+              style="display: none"
+            />
+          </div>
       <div class="me-nickname">{{ profile.name || "未设置昵称" }}</div>
       <nav class="me-menu">
         <router-link to="/me" class="me-menu-item" active-class="active">
           个人中心
-        </router-link>
+          </router-link>
         <router-link to="/my-teams" class="me-menu-item" active-class="active">
           我的球队
-        </router-link>
+          </router-link>
         <router-link
           to="/my-matches"
           class="me-menu-item"
           active-class="active"
         >
           我的比赛
-        </router-link>
+          </router-link>
         <router-link to="/settings" class="me-menu-item" active-class="active">
           系统设置
-        </router-link>
-      </nav>
-    </div>
-    <!-- 右侧内容区 -->
+          </router-link>
+        </nav>
+      </div>
+      <!-- 右侧内容区 -->
     <div class="me-main">
-      <div v-if="user">
+        <div v-if="user">
         <form class="me-info-form" @submit.prevent="saveProfile">
-          <h2>个人中心</h2>
+            <h2>个人中心</h2>
           <label>姓名</label>
-          <input v-model="profile.name" placeholder="请输入姓名" />
+              <input v-model="profile.name" placeholder="请输入姓名" />
           <label>联系方式</label>
-          <input v-model="profile.contact" placeholder="手机号或邮箱" />
+              <input v-model="profile.contact" placeholder="手机号或邮箱" />
           <label>邮箱</label>
-          <input :value="user.email" disabled />
+              <input :value="user.email" disabled />
           <label>用户ID</label>
-          <input :value="user.id" disabled />
+              <input :value="user.id" disabled />
           <button type="submit">保存</button>
         </form>
-      </div>
-      <div v-else>
-        <p>未登录，请先登录。</p>
+        </div>
+        <div v-else>
+          <p>未登录，请先登录。</p>
       </div>
     </div>
   </div>
