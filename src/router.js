@@ -12,6 +12,7 @@ import Me from './views/Me.vue'
 import MyTeams from './views/MyTeams.vue'
 import MeEdit from './views/MeEdit.vue'
 import Train from './views/Train.vue'
+import MatchHall from './views/MatchHall.vue';
 
 const routes = [
   { path: '/', component: Home },
@@ -27,6 +28,11 @@ const routes = [
   { path: '/me/edit', component: MeEdit },
   { path: '/my-teams', component: MyTeams },
   { path: '/train', component: Train },
+  {
+    path: '/match',
+    name: 'MatchHall',
+    component: MatchHall
+  },
 ]
 
 const router = createRouter({

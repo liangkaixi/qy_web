@@ -9,7 +9,7 @@
   <div class="core-actions">
     <ActionButton icon="📅" text="立即预约" @click="goReserve" />
     <ActionButton icon="🎓" text="课程报名" @click="goCourse" />
-    <ActionButton icon="🏆" text="活动报名" @click="goActivity" />
+    <ActionButton icon="🏆" text="赛事报名" @click="goActivity" />
     <ActionButton icon="📊" text="我的数据" @click="goData" />
   </div>
   <!-- 公告栏 -->

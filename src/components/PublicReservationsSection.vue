@@ -10,43 +10,44 @@
         <div class="card-header">
           <span class="sport-type">{{ item.court_type_name }}</span>
           <span class="venue-name">{{ item.venue_name }}</span>
+          <span class="court-name">{{ item.court_name }}</span>
         </div>
         <div class="card-main">
-          <div class="pill-row">
-            <span class="pill-time">{{ item.timeRange }}</span>
-            <span class="pill-date"
-              >{{ formatDate(item.date) }}（{{ getWeekday(item.date) }}）</span
-            >
+          <div class="time-info">
+            <span class="date">{{ item.date }}</span>
+            <span class="start-time">{{ item.start_time.slice(0, 5) }}</span>
+            <span class="duration">/{{ item.duration }}分钟</span>
           </div>
-          <div class="initiator-info">
-            <span class="label">发起人：</span>
-            <span class="initiator-avatar-name">
-              <template v-if="item.initiator_avatar">
-                <img :src="item.initiator_avatar" class="avatar-mini" />
-              </template>
-              <span class="initiator-name">{{
-                item.initiator_nickname || "匿名"
-              }}</span>
-            </span>
+          <div class="initiator">
+            <template v-if="item.initiator_avatar">
+              <img :src="item.initiator_avatar" class="avatar-mini" />
+              <span class="initiator-name">{{ item.initiator_nickname }}</span>
+            </template>
+            <template v-else>
+              <span class="initiator-name">{{ item.initiator_nickname }}</span>
+            </template>
           </div>
-          <div class="participants-info">
-            <span class="label">报名人数：</span>
-            <span class="participant-count">{{ item.participant_count }}</span>
-            <span class="avatars">
+          <div class="participants">
+            <div class="avatars">
               <img
                 v-for="(p, idx) in (item.participants || [])
-                  .filter((p) => p && p.avatar)
+                  .filter((p) => p && p.user_id !== item.initiator_id)
                   .slice(0, 5)"
-                :key="p.user_id"
+                :key="p && p.user_id"
+                v-if="p && p.avatar"
                 :src="p.avatar"
                 class="avatar-mini"
                 :title="p.nickname"
                 :style="{
                   zIndex: 10 - idx,
-                  marginLeft: idx === 0 ? '8px' : '-10px',
+                  marginLeft: idx === 0 ? '0' : '-10px',
                 }"
               />
-            </span>
+              <span v-if="item.participant_count > 5" class="more"
+                >+{{ item.participant_count - 5 }}</span
+              >
+              <span class="count">{{ item.participant_count }}</span>
+            </div>
           </div>
           <div class="tags">
             <span v-if="item.visibility === 'public'" class="tag tag-public"
@@ -89,7 +90,6 @@ import {
 } from "@/api/reservations";
 import { getCourtTypes } from "@/api/courtTypes";
 import { getVenues } from "@/api/venues";
-import supabase from "@/supabase";
 
 function getCurrentUser() {
   const u = localStorage.getItem("qy_user");
@@ -122,46 +122,14 @@ async function fetchReservations() {
   loading.value = true;
   try {
     const data = await getPublicReservationsWithUsers();
-    // 查所有场地
-    const { data: allCourts } = await supabase
-      .from("qy_courts")
-      .select("id, type_id, name, venue_id");
-    const courtIdToTypeId = {};
-    const courtIdToName = {};
-    const courtIdToVenueId = {};
-    (allCourts || []).forEach((c) => {
-      courtIdToTypeId[c.id] = c.type_id;
-      courtIdToName[c.id] = c.name;
-      courtIdToVenueId[c.id] = c.venue_id;
-    });
-    // 查所有场馆
-    const { data: allVenues } = await supabase
-      .from("qy_venues")
-      .select("id, name");
-    const venueIdToName = {};
-    (allVenues || []).forEach((v) => {
-      venueIdToName[v.id] = v.name;
-    });
     const now = new Date();
     reservations.value = data.map((item) => {
       const start = new Date(item.date + "T" + item.start_time);
       const end = new Date(start.getTime() + item.duration * 60000);
-      const pad = (n) => n.toString().padStart(2, "0");
-      const startTimeStr = `${pad(start.getHours())}:${pad(
-        start.getMinutes()
-      )}`;
-      const endTimeStr = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
-      const displayTime = `${item.date} ${startTimeStr} ~ ${endTimeStr}`;
-      const timeRange = `${startTimeStr} ~ ${endTimeStr}`;
       const leftMinutes = Math.max(0, Math.floor((end - now) / 60000));
       const user = getCurrentUser();
       const isInitiator =
         user && item.initiator_id && user.id === item.initiator_id;
-      // 查类型名、场地名、场馆名
-      const typeId = courtIdToTypeId[item.court_id];
-      const courtTypeName = courtTypeMap.value[typeId] || "";
-      const courtName = courtIdToName[item.court_id] || "";
-      const venueName = venueIdToName[courtIdToVenueId[item.court_id]] || "";
       return {
         ...item,
         leftMinutes,
@@ -170,11 +138,6 @@ async function fetchReservations() {
           user &&
           Array.isArray(item.participants) &&
           item.participants.some((p) => p.user_id === user.id),
-        court_type_name: courtTypeName,
-        court_name: courtName,
-        venue_name: venueName,
-        displayTime,
-        timeRange,
       };
     });
   } catch (e) {
@@ -206,15 +169,6 @@ async function join(item) {
 function isInitiator(item) {
   const user = getCurrentUser();
   return user && item.initiator_id && user.id === item.initiator_id;
-}
-
-function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  return `${d.getMonth() + 1}月${d.getDate()}日`;
-}
-function getWeekday(dateStr) {
-  const d = new Date(dateStr);
-  return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][d.getDay()];
 }
 </script>
 
@@ -277,52 +231,13 @@ function getWeekday(dateStr) {
 .card-main {
   margin-bottom: 0.7rem;
 }
-.pill-row {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
+.time-info {
+  font-size: 1.05em;
+  color: #222;
   margin-bottom: 0.3em;
 }
-.pill-time {
-  background: linear-gradient(90deg, #1a73e8 0%, #34d399 100%);
-  color: #fff;
-  border-radius: 1.3em;
-  padding: 0.06em 0.7em;
-  font-size: 0.88em;
-  font-weight: 600;
-  letter-spacing: 0.1px;
-  box-shadow: 0 1px 6px rgba(52, 211, 153, 0.08);
-  white-space: nowrap;
-  min-width: 70px;
-  display: inline-block;
-  overflow: visible;
-  text-overflow: unset;
-}
-.pill-date {
-  color: #666;
-  font-size: 1em;
-}
-.initiator-info {
-  font-size: 0.97em;
-  color: #666;
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.2em;
-}
-.initiator-avatar-name {
-  display: flex;
-  align-items: center;
-}
-.avatar-mini {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 6px;
-  border: 1px solid #e3eefe;
-  background: #f6f8fa;
-}
-.participants-info {
+.initiator,
+.participants {
   font-size: 0.97em;
   color: #666;
   margin-bottom: 0.2em;
@@ -376,6 +291,15 @@ function getWeekday(dateStr) {
     max-width: 100%;
     min-width: 0;
   }
+}
+.avatar-mini {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 2px;
+  border: 1px solid #e3eefe;
+  background: #f6f8fa;
 }
 .avatars {
   display: inline-flex;

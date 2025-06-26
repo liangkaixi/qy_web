@@ -1,125 +1,71 @@
 <template>
   <div class="recommend-section">
-    <div class="section-title">🌟 今日推荐</div>
-    <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="items.length === 0" class="empty">暂无推荐内容</div>
-    <div class="recommend-list">
-      <div v-for="item in items" :key="item.id" class="recommend-card">
+    <h3>推荐内容</h3>
+    <ul>
+      <li v-for="item in items" :key="item.id">
         <img
           v-if="item.img"
           :src="item.img"
+          :alt="item.title"
           class="recommend-img"
-          alt="推荐图片"
         />
         <div class="recommend-info">
           <div class="recommend-title">{{ item.title }}</div>
           <div class="recommend-desc">{{ item.description }}</div>
-          <a
-            v-if="item.link"
-            :href="item.link"
-            class="recommend-link"
-            target="_blank"
-            >了解更多</a
-          >
         </div>
-      </div>
-    </div>
-    <slot></slot>
+      </li>
+    </ul>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
-
-/**
- * 推荐内容区块，首页使用。
- * 支持通过 props 传入推荐内容列表，或后续扩展为自动拉取推荐数据。
- */
-const props = defineProps({
-  items: {
-    type: Array,
-    default: () => [],
-  },
-});
-
-const loading = ref(false);
-// 预留后续自动拉取推荐内容的逻辑
+// 假设后续可从API获取推荐内容
+const items = ref([
+  { id: 1, title: "篮球体验课", description: "限时特惠，立即报名", img: "" },
+  { id: 2, title: "羽毛球场地预约", description: "热门时段抢订", img: "" },
+]);
+// 可在onMounted中请求API获取真实数据
 </script>
-
 <style scoped>
 .recommend-section {
-  max-width: 900px;
-  margin: 1.5rem auto 1rem auto;
+  padding: 16px 0;
 }
-.section-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #1a73e8;
-  margin-bottom: 0.7rem;
+.recommend-section h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
 }
-.loading,
-.empty {
-  text-align: center;
-  color: #888;
-  margin: 2rem 0;
+.recommend-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
-.recommend-list {
+.recommend-section li {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1.2rem;
-}
-.recommend-card {
+  align-items: center;
+  margin-bottom: 12px;
   background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 12px rgba(52, 211, 153, 0.09);
-  padding: 1.1rem 1.3rem 1.2rem 1.3rem;
-  min-width: 220px;
-  max-width: 300px;
-  flex: 1 1 260px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(59, 178, 249, 0.08);
+  padding: 10px;
 }
 .recommend-img {
-  width: 100%;
-  height: 120px;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
   object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 0.7em;
+  margin-right: 12px;
+  background: #f0f0f0;
 }
 .recommend-info {
-  width: 100%;
+  flex: 1;
 }
 .recommend-title {
-  font-size: 1.05em;
   font-weight: 600;
-  color: #222;
-  margin-bottom: 0.3em;
+  font-size: 16px;
 }
 .recommend-desc {
-  font-size: 0.97em;
-  color: #666;
-  margin-bottom: 0.5em;
-}
-.recommend-link {
-  color: #1a73e8;
-  font-size: 0.95em;
-  text-decoration: underline;
-}
-@media (max-width: 700px) {
-  .recommend-list {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  .recommend-card {
-    max-width: 100%;
-    min-width: 0;
-  }
-  .recommend-img {
-    height: 90px;
-  }
+  color: #888;
+  font-size: 13px;
+  margin-top: 2px;
 }
 </style>
