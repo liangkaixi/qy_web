@@ -106,10 +106,13 @@ export async function getPublicReservationsWithUsers() {
   if (uError) throw uError;
 
   const userMap = Object.fromEntries(users.map(u => [u.id, u]));
+  console.log('users:', users);
+  console.log('userMap:', userMap);
 
   // 5. 合并数据
   return reservations.map(r => {
     const initiator = userMap[r.user_id] || {};
+    console.log('reservation user_id:', r.user_id, 'initiator:', initiator);
     const thisParticipants = participants
       .filter(p => p.reservation_id === r.id)
       .map(p => ({

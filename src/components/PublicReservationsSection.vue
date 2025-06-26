@@ -121,6 +121,7 @@ async function fetchReservations() {
   loading.value = true;
   try {
     const data = await getPublicReservationsWithUsers();
+    console.log("getPublicReservationsWithUsers 原始数据:", data);
     const now = new Date();
     reservations.value = data.map((item) => {
       const start = new Date(item.date + "T" + item.start_time);
@@ -139,6 +140,7 @@ async function fetchReservations() {
           item.participants.some((p) => p.user_id === user.id),
       };
     });
+    console.log("最终 reservations.value:", reservations.value);
   } catch (e) {
     reservations.value = [];
     window.$toast && window.$toast("公开活动加载失败，请稍后重试");
