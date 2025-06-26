@@ -1,5 +1,6 @@
 <script setup>
 import NavBar from "./components/NavBar.vue";
+import IcpFooter from "@/components/IcpFooter.vue";
 </script>
 
 <template>
@@ -9,6 +10,7 @@ import NavBar from "./components/NavBar.vue";
 
   <main>
     <router-view />
+    <IcpFooter />
   </main>
 </template>
 

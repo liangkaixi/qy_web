@@ -24,6 +24,12 @@
       </div>
       <button type="submit">登录</button>
     </form>
+    <div class="register-tip">
+      没有账号？
+      <button type="button" class="register-btn" @click="goRegister">
+        注册
+      </button>
+    </div>
   </div>
 </template>
 
@@ -34,6 +40,10 @@ import supabase from "../supabase";
 const username = ref("");
 const password = ref("");
 const router = useRouter();
+
+function goRegister() {
+  router.push("/register");
+}
 
 async function onLogin() {
   if (!username.value || !password.value) {
@@ -117,5 +127,26 @@ button[type="submit"] {
 }
 button[type="submit"]:hover {
   background: #1761c6;
+}
+.register-tip {
+  text-align: center;
+  margin-top: 1.2rem;
+  color: #666;
+  font-size: 0.98em;
+}
+.register-btn {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 0.3em;
+  font-size: 1em;
+  padding: 0;
+  transition: color 0.2s;
+}
+.register-btn:hover {
+  color: #1761c6;
+  text-decoration: underline;
 }
 </style>

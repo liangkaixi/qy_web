@@ -197,3 +197,4 @@ create policy "Allow insert own reservation"
   on qy_court_reservations
   for insert
   with check (user_id = auth.uid());
+

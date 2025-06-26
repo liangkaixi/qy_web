@@ -121,6 +121,7 @@ import CourtSelect from "@/components/CourtSelect.vue";
 import DateSelect from "@/components/DateSelect.vue";
 import TimeSelect from "@/components/TimeSelect.vue";
 import DurationSelect from "@/components/DurationSelect.vue";
+import { useRouter } from "vue-router";
 
 const showType = ref(false);
 const showArea = ref(false);
@@ -176,14 +177,20 @@ const canSubmit = computed(
 
 let allRelatedReservations = ref([]);
 const currentUser = ref(null);
+const router = useRouter();
 
 onMounted(() => {
+  // 登录校验
+  const u = localStorage.getItem("qy_user");
+  if (!u) {
+    router.replace("/login");
+    return;
+  }
+  currentUser.value = JSON.parse(u);
   fetchCourtTypes();
   setDateOptions();
   const savedPhone = localStorage.getItem("reservation_phone");
   if (savedPhone) phone.value = savedPhone;
-  const u = localStorage.getItem("qy_user");
-  currentUser.value = u ? JSON.parse(u) : null;
 });
 
 async function fetchCourtTypes() {

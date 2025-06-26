@@ -11,6 +11,7 @@ import Reservation from './views/Reservation.vue'
 import Me from './views/Me.vue'
 import MyTeams from './views/MyTeams.vue'
 import MeEdit from './views/MeEdit.vue'
+import Train from './views/Train.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -25,6 +26,7 @@ const routes = [
   { path: '/me', component: Me },
   { path: '/me/edit', component: MeEdit },
   { path: '/my-teams', component: MyTeams },
+  { path: '/train', component: Train },
 ]
 
 const router = createRouter({
