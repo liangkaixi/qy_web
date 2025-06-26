@@ -48,8 +48,22 @@ async function onLogin() {
     alert("登录失败：" + error.message);
     return;
   }
+  // 自动同步用户到 qy_users 表
+  const user = data.user;
+  if (user) {
+    await supabase.from("qy_users").upsert({
+      id: user.id,
+      openid: user.id, // 以 auth.users.id 作为 openid
+      nickname: user.user_metadata?.full_name || user.email || user.id,
+      avatar_url: user.user_metadata?.avatar_url || "",
+      gender: 0,
+      city: "",
+      province: "",
+      country: "",
+    });
+  }
   // 存储用户信息到localStorage
-  localStorage.setItem("qy_user", JSON.stringify(data.user));
+  localStorage.setItem("qy_user", JSON.stringify(user));
   // 跳转首页
   router.push("/");
 }

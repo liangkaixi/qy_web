@@ -7,9 +7,10 @@ import Basketball from './views/Basketball.vue'
 import Badminton from './views/Badminton.vue'
 import Volleyball from './views/Volleyball.vue'
 import Fitness from './views/Fitness.vue'
-import Reserve from './views/Reserve.vue'
+import Reservation from './views/Reservation.vue'
 import Me from './views/Me.vue'
 import MyTeams from './views/MyTeams.vue'
+import MeEdit from './views/MeEdit.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -19,9 +20,10 @@ const routes = [
   { path: '/badminton', component: Badminton },
   { path: '/volleyball', component: Volleyball },
   { path: '/fitness', component: Fitness },
-  { path: '/reserve/:type', component: Reserve },
+  { path: '/reserve', component: Reservation },
   { path: '/reservation', component: () => import('./views/Reservation.vue') },
   { path: '/me', component: Me },
+  { path: '/me/edit', component: MeEdit },
   { path: '/my-teams', component: MyTeams },
 ]
 

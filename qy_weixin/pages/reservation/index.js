@@ -30,7 +30,13 @@ Page({
     showCourtSelect: false, // 是否显示场地选择
     disabledMap: {}, // { courtId: [{start, end}, ...] }
   },
-
+  onShow() {
+    if (!isLoggedIn()) {
+      wx.navigateTo({
+        url: '/pages/me/index'
+      });
+    }
+  },
   async onLoad() {
     this.setDateOptions();
     await this.fetchCourtTypes();
@@ -48,11 +54,13 @@ Page({
         label: `${month}月${day}日${i === 0 ? ' (今天)' : ''}`,
         value: `${year}-${month}-${day}`
       };
-      });
+    });
     this.setData({
       dateOptions,
       date: dateOptions[0].value,
       dateLabel: dateOptions[0].label,
+      start: dateOptions[0].value,
+      end: dateOptions[dateOptions.length - 1].value
     });
   },
 
@@ -157,19 +165,11 @@ Page({
 
   // 选择日期
   onDateChange(e) {
-    const value = e.detail.value;
-    const dateOption = this.data.dateOptions.find(d => d.value === value);
+    const index = e.detail.value;
+    const selectedDate = this.data.dateOptions[index];
     this.setData({
-      date: value,
-      dateLabel: dateOption ? dateOption.label : value,
-    }, () => {
-      console.log('onDateChange callback: courtId:', this.data.courtId, 'date:', this.data.date);
-      // 只有选中场地和日期后才请求禁用映射
-      if (this.data.courtId && this.data.date) {
-        this.fetchDisabledMap();
-      } else {
-        this.setData({ availableSlots: [] });
-      }
+      date: selectedDate.value,
+      dateLabel: selectedDate.label
     });
   },
 

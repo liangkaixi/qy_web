@@ -1,10 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
-
+const axios = require('axios');
 // TODO: 替换为你的 Supabase 项目地址和 service_role 密钥
 const SUPABASE_URL = 'https://supabase.luxilive.cn';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey AgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
+const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 const app = express();
@@ -153,17 +153,16 @@ app.get('/api/disabled_slots', async (req, res) => {
   const { date, courtId } = req.query;
   if (!date) return res.status(400).json({ error: 'date is required' });
 
-  // 查询目标场地（如果有）
+  // 只查相关分区
   let courtIdsToQuery = [];
   if (courtId) {
     try {
-      courtIdsToQuery = await getConflictCourtIds(courtId); // 自己 + 互斥
+      courtIdsToQuery = await getConflictCourtIds(courtId); // 自己+互斥
     } catch (err) {
       return res.status(500).json({ error: '获取互斥场地失败', detail: err.message });
     }
   }
 
-  // 查询预约
   let query = supabase
     .from('qy_court_reservations')
     .select('*')
@@ -191,7 +190,7 @@ app.get('/api/disabled_slots', async (req, res) => {
     }
   }
 
-  // 如果传了 courtId，仅返回相关项
+  // 只返回相关项
   if (courtId) {
     const filtered = {};
     for (const id of courtIdsToQuery) {
@@ -203,6 +202,66 @@ app.get('/api/disabled_slots', async (req, res) => {
   // 否则返回全部
   res.json(disableMap);
 });
+
+app.post('/api/onLogin', async (req, res) => {
+  const { code, userInfo } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ code: 1, msg: '缺少 code' });
+  }
+
+  try {
+    // 请求微信 openid
+    const { data: wxData } = await axios.get('https://api.weixin.qq.com/sns/jscode2session', {
+      params: {
+        appid: 'wx06d12d09f39a5a57',
+        secret: '1a42baf7fa87844100b6aa0934601678',
+        js_code: code,
+        grant_type: 'authorization_code'
+      }
+    });
+
+    const { openid, session_key, errcode, errmsg } = wxData;
+    if (!openid) {
+      return res.status(500).json({ code: 1, msg: '获取 openid 失败', error: { errcode, errmsg } });
+    }
+
+    const {
+      nickName: nickname,
+      avatarUrl,
+      gender,
+      city,
+      province,
+      country
+    } = userInfo || {};
+
+    // 插入或更新用户数据
+    const { data, error } = await supabase
+      .from('qy_users')
+      .upsert({
+        openid,
+        nickname,
+        avatar_url: avatarUrl,
+        gender,
+        city,
+        province,
+        country
+      }, { onConflict: 'openid' })  // 确保更新而不是插入重复
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(500).json({ code: 1, msg: '数据库保存失败', error });
+    }
+
+    res.json({ code: 0, data: { openid, user: data } });
+  } catch (err) {
+    console.error('登录异常:', err);
+    res.status(500).json({ code: 1, msg: '登录失败', error: err.message });
+  }
+});
+
+
 
 const port = process.env.PORT || 8000;
 app.listen(port, '0.0.0.0', () => {  // 确保是0.0.0.0而非localhost

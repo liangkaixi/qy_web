@@ -55,9 +55,6 @@ create table qy_court_reservations (
   status text default 'reserved',
   created_at timestamptz default now()
 );
-ALTER TABLE qy_court_reservations
-ADD COLUMN visibility text NOT NULL DEFAULT 'public';
--- 后续可支持 'public'（公开）、'invite'（仅限邀请）、'private'（私密）等
 -- 球队表（qy_teams）
 Apply to Reservation....
 create table qy_teams (
@@ -159,41 +156,3 @@ create table qy_team_member_likes (
   created_at timestamptz default now(),
   unique(team_id, member_id, user_id)
 );
-1. 公告表（qy_announcements）
-create table qy_announcements (
-  id uuid primary key default gen_random_uuid(),
-  text text not null,                -- 公告内容
-  created_at timestamptz default now()
-);
-2. 推荐内容表（qy_recommend_items）
-create table qy_recommend_items (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,               -- 推荐标题
-  description text,                  -- 推荐描述
-  img text,                          -- 推荐图片URL
-  link text,                         -- 跳转链接
-  type text,                         -- 推荐类型（如 course/activity/court，可选）
-  created_at timestamptz default now()
-);
-3. UGC动态表（qy_ugc_posts）
-create table qy_ugc_posts (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references qy_users(id),  -- 关联用户表
-  content text not null,                 -- 动态内容
-  created_at timestamptz default now()
-);
---2. 参与表（推荐新建）
-CREATE TABLE qy_reservation_participants (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  reservation_id uuid REFERENCES qy_court_reservations(id),
-  user_id uuid REFERENCES qy_users(id),
-  phone text,
-  joined_at timestamptz DEFAULT now(),
-  UNIQUE(reservation_id, user_id)
-);
-
--- RLS
-create policy "Allow insert own reservation"
-  on qy_court_reservations
-  for insert
-  with check (user_id = auth.uid());

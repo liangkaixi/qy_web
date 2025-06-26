@@ -49,6 +49,19 @@
         placeholder="请输入手机号"
       />
     </div>
+    <div class="reservation-row">
+      <span>预约可见性</span>
+      <div class="visibility-select">
+        <label>
+          <input type="radio" value="public" v-model="visibility" />
+          公开
+        </label>
+        <label>
+          <input type="radio" value="invite" v-model="visibility" />
+          仅限邀请
+        </label>
+      </div>
+    </div>
     <button
       class="submit-btn"
       @click="submitReservation"
@@ -135,6 +148,7 @@ const selectedDuration = ref(null);
 const phone = ref("");
 const message = ref("");
 const errorMsg = ref("");
+const visibility = ref("public");
 
 const selectedTypeName = computed(() => selectedType.value?.name || "");
 const selectedAreaLabel = computed(() => selectedArea.value?.label || "");
@@ -161,12 +175,15 @@ const canSubmit = computed(
 );
 
 let allRelatedReservations = ref([]);
+const currentUser = ref(null);
 
 onMounted(() => {
   fetchCourtTypes();
   setDateOptions();
   const savedPhone = localStorage.getItem("reservation_phone");
   if (savedPhone) phone.value = savedPhone;
+  const u = localStorage.getItem("qy_user");
+  currentUser.value = u ? JSON.parse(u) : null;
 });
 
 async function fetchCourtTypes() {
@@ -223,7 +240,7 @@ function genTimeSlots(reservations) {
         const rStart =
           parseInt(r.start_time.split(":")[0]) * 60 +
           parseInt(r.start_time.split(":")[1]);
-        const rEnd = rStart + r.duration * 60;
+        const rEnd = rStart + r.duration;
         return startMin >= rStart && startMin < rEnd;
       });
       slots.push({ label, value, disabled: conflict });
@@ -267,7 +284,7 @@ function genDurationOptions(startTime, reservations) {
       const rStart =
         parseInt(r.start_time.split(":")[0]) * 60 +
         parseInt(r.start_time.split(":")[1]);
-      const rEnd = rStart + r.duration * 60;
+      const rEnd = rStart + r.duration;
       return startMin < rEnd && endMin > rStart;
     });
     options.push({ label: `${h}小时`, value: h, disabled: conflict });
@@ -283,6 +300,10 @@ async function submitReservation() {
   if (!canSubmit.value) return;
   errorMsg.value = "";
   message.value = "";
+  if (!currentUser.value) {
+    errorMsg.value = "请先登录";
+    return;
+  }
   // 1. 查找所有冲突场地ID（含自身）
   const { data: conflictRows } = await supabase
     .from("qy_court_conflicts")
@@ -307,22 +328,24 @@ async function submitReservation() {
     const rStart =
       parseInt(r.start_time.split(":")[0]) * 60 +
       parseInt(r.start_time.split(":")[1]);
-    const rEnd = rStart + r.duration * 60;
+    const rEnd = rStart + r.duration;
     return startMin < rEnd && endMin > rStart;
   });
   if (conflict) {
     errorMsg.value = "该时段已被预约，请选择其他时间";
     return;
   }
-  // 4. 插入预约
+  // 4. 插入预约，带 user_id，duration 单位为分钟
   const { error } = await supabase.from("qy_court_reservations").insert({
     court_id: selectedCourt.value.id,
     date: selectedDate.value.value,
     start_time: selectedTime.value.value,
-    duration: selectedDuration.value.value,
+    duration: selectedDuration.value.value * 60,
     price: 0,
     phone: phone.value,
     status: "reserved",
+    visibility: visibility.value,
+    user_id: currentUser.value.id,
   });
   if (!error) {
     message.value = "预约成功！";
@@ -423,5 +446,17 @@ function setDateOptions() {
   color: #ef4444;
   text-align: center;
   margin-bottom: 0.5rem;
+}
+.visibility-select {
+  display: flex;
+  gap: 1.2em;
+  font-size: 1.05em;
+}
+.visibility-select label {
+  cursor: pointer;
+  color: #1a73e8;
+}
+.visibility-select input[type="radio"] {
+  margin-right: 0.3em;
 }
 </style>

@@ -1,6 +1,6 @@
 .reservation-container {
-  max-width: 540rpx;
-  margin: 48rpx auto 0;
+  max-width: 600rpx;
+  margin: 24rpx auto 0;
   padding: 32rpx 20rpx 28rpx 20rpx;
   background: linear-gradient(135deg, #f5fafd 60%, #e0f7fa 100%);
   border-radius: 24rpx;

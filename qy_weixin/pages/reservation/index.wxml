@@ -25,7 +25,7 @@
     </button>
   </view>
   <!-- 日期选择 -->
-  <picker mode="date" value="{{date}}" start="{{dateOptions[0].value}}" end="{{dateOptions[dateOptions.length-1].value}}" bindchange="onDateChange">
+  <picker mode="selector" range="{{dateOptions}}" range-key="label" value="0" bindchange="onDateChange">
     <view class="date-select">{{dateLabel}}</view>
   </picker>
   <!-- 时间段展示 -->

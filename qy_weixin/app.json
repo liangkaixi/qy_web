@@ -1,6 +1,8 @@
 {
   "pages": [
+    
     "pages/venues/index",
+    "pages/login/index",
     "pages/courts/index",
     "pages/court_detail/index",
     "pages/my_reservations/index",

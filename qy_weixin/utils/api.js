@@ -61,6 +61,22 @@ function getCourtsByType(type_id) {
   return request({ url: '/courts', data: { type_id } });
 }
 
+/**
+ * 微信小程序一键登录
+ * @param {Object} param0
+ * @param {string} param0.code - wx.login获取的code
+ * @param {Object} param0.userInfo - wx.getUserProfile获取的用户信息
+ * @returns {Promise} 后端返回 { code, data }
+ */
+function wxLogin({ code, userInfo }) {
+  return request({
+    url: '/onLogin',
+    method: 'POST',
+    data: { code, userInfo },
+    header: { 'content-type': 'application/json' }
+  });
+}
+
 // 获取禁用时间段映射
 async function getDisabledSlots(date, courtId) {
   console.log('🔥 courtId 请求:', courtId);
@@ -89,4 +105,5 @@ module.exports = {
   getCourtReservations,
   getCourtsByType,
   getDisabledSlots,
+  wxLogin
 };

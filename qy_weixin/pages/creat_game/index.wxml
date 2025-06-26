@@ -1,0 +1,49 @@
+<!-- 创建游戏页面 -->
+<view class="container">
+  <view class="form-section">
+    <view class="form-item">
+      <text class="label">运动</text>
+      <picker mode="selector" range="{{sports}}" value="{{sportIndex}}" bindchange="onSportChange">
+        <view class="picker">{{sports[sportIndex]}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="label">区域</text>
+      <picker mode="selector" range="{{regions}}" value="{{regionIndex}}" bindchange="onRegionChange">
+        <view class="picker">{{regions[regionIndex]}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="label">日期</text>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange">
+        <view class="picker">{{date}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="label">时间</text>
+      <picker mode="time" value="{{time}}" bindchange="onTimeChange">
+        <view class="picker">{{time}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="section-title">活动权限</view>
+  <view class="permission-tabs">
+    <view class="tab {{permission === 'public' ? 'active' : ''}}" data-value="public" bindtap="onPermissionChange">
+      公众
+    </view>
+    <view class="tab {{permission === 'private' ? 'active' : ''}}" data-value="private" bindtap="onPermissionChange">
+      仅限邀请参加
+    </view>
+  </view>
+  <view class="permission-tip">
+    <text wx:if="{{permission === 'public'}}">这款游戏可以在“Playo”平台上被所有玩家发现。</text>
+    <text wx:if="{{permission === 'private'}}">仅受邀玩家可见和参与该游戏。</text>
+  </view>
+
+  <navigator url="/pages/create_game/advanced" class="advanced-setting">
+    高级设置
+  </navigator>
+
+  <button class="submit-btn" bindtap="onSubmit">创建游戏</button>
+</view>

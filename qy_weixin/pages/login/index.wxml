@@ -1,0 +1,5 @@
+<view class="login-page">
+  <image class="avatar" src="/static/default-avatar.png" />
+  <text class="title">请先登录</text>
+  <button type="primary" bindtap="onTapLogin">微信一键登录</button>
+</view>
